@@ -1,6 +1,6 @@
 require 'rake/gempackagetask'
 require 'rubygems/specification'
-require 'spec/rake/spectask'
+require 'rspec/core/rake_task'
 require 'date'
 require 'bundler'
 
@@ -28,10 +28,10 @@ spec = Gem::Specification.new do |s|
   s.email            = EMAIL
   s.homepage         = HOMEPAGE
 
-  bundle = Bundler::Definition.from_gemfile("Gemfile")
+  bundle = Bundler::Definition.build("Gemfile", "Gemfile.lock", nil)
   bundle.dependencies.
     select { |d| d.groups.include?(:runtime) }.
-    each   { |d| s.add_dependency(d.name, d.version_requirements.to_s)  }
+    each   { |d| s.add_dependency(d.name, d.requirement.to_s)  }
 
   s.require_path = 'lib'
   s.files = %w(LICENSE README.md Rakefile TODO) + Dir.glob("{lib,specs}/**/*")
@@ -52,14 +52,14 @@ task :default => 'rack_hoptoad:spec'
 
 namespace :rack_hoptoad do
   desc "Run unit specifications"
-  Spec::Rake::SpecTask.new(:spec) do |t|
-    t.spec_opts << %w(-fs --color)
-    t.spec_opts << '--loadby' << 'random'
-    t.spec_files = Dir["spec/*_spec.rb"]
-
-    t.rcov_opts << '--exclude' << 'spec,.bundle,.rvm'
-    t.rcov = ENV.has_key?('NO_RCOV') ? ENV['NO_RCOV'] != 'true' : true
-    t.rcov_opts << '--text-summary'
-    t.rcov_opts << '--sort' << 'coverage' << '--sort-reverse'
-  end
+  RSpec::Core::RakeTask.new(:spec)# do |t|
+  #  t.spec_opts << %w(-fs --color)
+  #  t.spec_opts << '--loadby' << 'random'
+  #  t.spec_files = Dir["spec/*_spec.rb"]
+  #
+  #  t.rcov_opts << '--exclude' << 'spec,.bundle,.rvm'
+  #  t.rcov = ENV.has_key?('NO_RCOV') ? ENV['NO_RCOV'] != 'true' : true
+  #  t.rcov_opts << '--text-summary'
+  #  t.rcov_opts << '--sort' << 'coverage' << '--sort-reverse'
+  #end
 end
